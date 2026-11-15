@@ -25,6 +25,10 @@
             '$1$2<img src="logo.png" alt="Logo FITS" style="display:block;width:48px;height:auto;margin:0 auto 6px">$2$3'
           );
 
+          var changeQtyPattern = /window\.changeQty=function\(ref,d\)\{[\s\S]*?\};/;
+          if (!changeQtyPattern.test(html)) throw new Error('Fonction de quantité du panier introuvable.');
+          html = html.replace(changeQtyPattern, "window.changeQty=function(ref,d){var prod=FITS_DATA.products.find(function(p){return p.ref===ref});var it=cart.find(function(c){return c.ref===ref});if(!prod||!it)return;var max=Math.max(0,Number(prod.qty)||0);var next=Number(it.qty)+Number(d);if(next<=0){cart=cart.filter(function(c){return c.ref!==ref});renderCart();return;}if(next>max){it.qty=max;renderCart();alert('Stock maximum atteint : '+max);return;}it.qty=next;renderCart();};");
+
           var receiptPrintStyle = '<style>@media print { @page { size: 80mm auto; margin: 0; } html, body { width: 80mm !important; height: auto !important; min-height: 0 !important; margin: 0 !important; padding: 0 !important; } body { display: block !important; } .main-content, main, #sales-section, #sales-section > .grid-2col, #sales-section > .grid-2col > .content-block:has(.receipt) { height: auto !important; min-height: 0 !important; margin: 0 !important; padding: 0 !important; } .receipt { position: relative !important; top: auto !important; left: auto !important; display: block !important; width: 76mm !important; height: auto !important; min-height: 0 !important; margin: 0 !important; padding: 2mm !important; border: 0 !important; border-radius: 0 !important; box-sizing: border-box !important; background: #fff !important; font-size: 10px !important; line-height: 1.15 !important; page-break-inside: avoid !important; break-inside: avoid !important; } .receipt table th, .receipt table td { padding: 2px !important; font-size: 9px !important; } }</style>';
           html = html.replace('</head>', receiptPrintStyle + '</head>');
 
