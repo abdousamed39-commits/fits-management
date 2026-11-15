@@ -11,7 +11,7 @@
     (function () {
       var sourceUrl = 'https://raw.githubusercontent.com/abdousamed39-commits/fits-management/3aad6c001b4bff16c24ff39db75f66fe3f613527/index.html';
 
-      fetch(sourceUrl)
+      fetch(sourceUrl, { cache: 'no-store' })
         .then(function (response) {
           if (!response.ok) throw new Error('Impossible de charger l’application (' + response.status + ').');
           return response.text();
@@ -25,8 +25,8 @@
             '$1$2<img src="logo.png" alt="Logo FITS" style="display:block;width:48px;height:auto;margin:0 auto 6px">$2$3'
           );
 
-          // The app is loaded asynchronously after this page's DOMContentLoaded event.
-          // Run its setup immediately instead of waiting for an event that may have passed.
+          // The app is fetched after this document's DOMContentLoaded event.
+          // Execute its setup immediately, rather than waiting for an event that has passed.
           var readyHandler = "document.addEventListener('DOMContentLoaded', function(){";
           if (html.indexOf(readyHandler) === -1) {
             throw new Error('Initialisation de l’application introuvable.');
