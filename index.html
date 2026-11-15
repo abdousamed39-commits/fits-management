@@ -8,22 +8,31 @@
 <body>
   <p>Chargement de FITS MANAGER…</p>
   <script>
-    fetch('https://raw.githubusercontent.com/abdousamed39-commits/fits-management/3aad6c001b4bff16c24ff39db75f66fe3f613527/index.html')
-      .then(function (response) {
-        if (!response.ok) throw new Error('Impossible de charger l’application.');
-        return response.text();
-      })
-      .then(function (html) {
-        var receiptHeader = '<div class="receipt-head"><h2>FITS MANAGER</h2><small>Fouta IT Services</small></div>';
-        var receiptHeaderWithLogo = '<div class="receipt-head"><img src="logo.png" alt="Logo FITS" style="display:block;width:48px;height:auto;margin:0 auto 6px"><h2>FITS MANAGER</h2><small>Fouta IT Services</small></div>';
-        if (!html.includes(receiptHeader)) throw new Error('En-tête du reçu introuvable.');
-        document.open();
-        document.write(html.replace(receiptHeader, receiptHeaderWithLogo));
-        document.close();
-      })
-      .catch(function (error) {
-        document.body.textContent = 'Erreur de chargement : ' + error.message;
-      });
+    (function () {
+      var sourceUrl = 'https://raw.githubusercontent.com/abdousamed39-commits/fits-management/3aad6c001b4bff16c24ff39db75f66fe3f613527/index.html';
+
+      fetch(sourceUrl)
+        .then(function (response) {
+          if (!response.ok) throw new Error('Impossible de charger l’application (' + response.status + ').');
+          return response.text();
+        })
+        .then(function (html) {
+          var receiptHeader = /(<div class="receipt-head">)(\s*)(<h2>FITS MANAGER<\/h2>)/;
+          if (!receiptHeader.test(html)) throw new Error('En-tête du reçu introuvable dans l’application.');
+
+          html = html.replace(
+            receiptHeader,
+            '$1$2<img src="logo.png" alt="Logo FITS" style="display:block;width:48px;height:auto;margin:0 auto 6px">$2$3'
+          );
+
+          document.open();
+          document.write(html);
+          document.close();
+        })
+        .catch(function (error) {
+          document.body.innerHTML = '<p style="font-family:sans-serif;color:#b00020;padding:1rem">Erreur de chargement : ' + error.message + '</p>';
+        });
+    })();
   </script>
 </body>
 </html>
