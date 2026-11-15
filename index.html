@@ -25,24 +25,23 @@
             '$1$2<img src="logo.png" alt="Logo FITS" style="display:block;width:48px;height:auto;margin:0 auto 6px">$2$3'
           );
 
-          var changeQtyPattern = /window\.changeQty=function\(ref,d\)\{[\s\S]*?\};/;
-          if (!changeQtyPattern.test(html)) throw new Error('Fonction de quantité du panier introuvable.');
-          html = html.replace(changeQtyPattern, "window.changeQty=function(ref,d){var prod=FITS_DATA.products.find(function(p){return p.ref===ref});var it=cart.find(function(c){return c.ref===ref});if(!prod||!it)return;var max=Math.max(0,Number(prod.qty)||0);var next=Number(it.qty)+Number(d);if(next<=0){cart=cart.filter(function(c){return c.ref!==ref});renderCart();return;}if(next>max){it.qty=max;renderCart();alert('Stock maximum atteint : '+max);return;}it.qty=next;renderCart();};");
+          var changeQtyStart = html.indexOf('window.changeQty=function(ref,d){');
+          var removeCartStart = html.indexOf('window.removeCart=function(ref){', changeQtyStart);
+          if (changeQtyStart === -1 || removeCartStart === -1) {
+            throw new Error('Fonction de quantité du panier introuvable.');
+          }
+          html = html.slice(0, changeQtyStart) +
+            "window.changeQty=function(ref,d){var prod=FITS_DATA.products.find(function(p){return p.ref===ref});var it=cart.find(function(c){return c.ref===ref});if(!prod||!it)return;var max=Math.max(0,Number(prod.qty)||0);var next=Number(it.qty)+Number(d);if(next<=0){cart=cart.filter(function(c){return c.ref!==ref});renderCart();return;}if(next>max){it.qty=max;renderCart();alert('Stock maximum atteint : '+max);return;}it.qty=next;renderCart();};\n  " +
+            html.slice(removeCartStart);
 
-          var addToCartPattern = /document\.getElementById\('btn-add-to-cart'\)\.addEventListener\('click',function\(\)\{[\s\S]*?\}\);/;
-          if (!addToCartPattern.test(html)) throw new Error('Bouton d’ajout à la caisse introuvable.');
-          html = html.replace(addToCartPattern, "document.getElementById('btn-add-to-cart').addEventListener('click',function(){var ref=document.getElementById('sale-product-select').value;if(!ref)return;var prod=FITS_DATA.products.find(function(p){return p.ref===ref});if(!prod)return;if((Number(prod.qty)||0)<=0)return alert('Rupture');var item=cart.find(function(c){return c.ref===ref});if(item){if(item.qty+1>prod.qty)return alert('Stock maximum atteint : '+prod.qty);item.qty++;}else{cart.push({ref:prod.ref,name:prod.name,price:prod.sell,buy:prod.buy,qty:1});}renderCart();});");
-
-          var salesSectionPattern = /(<section id="sales-section"[\s\S]*?<select id="sale-product-select">)([\s\S]*?)(<\/select>)/;
-          if (!salesSectionPattern.test(html)) throw new Error('Sélecteur de produit de la caisse introuvable.');
-          html = html.replace(salesSectionPattern, function (match, before, options, after) {
-            var marker = '<option value="">-- Choisir --</option>';
-            if (options.indexOf(marker) === -1) return match;
-            var productOptions = options.replace(marker, '').replace(/<option value="([^"]+)">([\s\S]*?)<\/option>/g, function (option, ref, label) {
-              return '<option value="' + ref + '">' + label + '</option>';
-            });
-            return before + marker + productOptions + after;
-          });
+          var addToCartStart = html.indexOf("document.getElementById('btn-add-to-cart').addEventListener('click',function(){");
+          var validateSaleStart = html.indexOf("document.getElementById('btn-validate-sale').addEventListener('click',function(){", addToCartStart);
+          if (addToCartStart === -1 || validateSaleStart === -1) {
+            throw new Error('Boutons de la caisse introuvables.');
+          }
+          html = html.slice(0, addToCartStart) +
+            "document.getElementById('btn-add-to-cart').addEventListener('click',function(){var ref=document.getElementById('sale-product-select').value;if(!ref)return;var prod=FITS_DATA.products.find(function(p){return p.ref===ref});if(!prod)return;if((Number(prod.qty)||0)<=0)return alert('Rupture');var item=cart.find(function(c){return c.ref===ref});if(item){if(item.qty+1>prod.qty)return alert('Stock maximum atteint : '+prod.qty);item.qty++;}else{cart.push({ref:prod.ref,name:prod.name,price:prod.sell,buy:prod.buy,qty:1});}renderCart();});\n  " +
+            html.slice(validateSaleStart);
 
           var receiptPrintStyle = '<style>@media print { @page { size: 80mm auto; margin: 0; } html, body { width: 80mm !important; height: auto !important; min-height: 0 !important; margin: 0 !important; padding: 0 !important; } body { display: block !important; } .main-content, main, #sales-section, #sales-section > .grid-2col, #sales-section > .grid-2col > .content-block:has(.receipt) { height: auto !important; min-height: 0 !important; margin: 0 !important; padding: 0 !important; } .receipt { position: relative !important; top: auto !important; left: auto !important; display: block !important; width: 76mm !important; height: auto !important; min-height: 0 !important; margin: 0 !important; padding: 2mm !important; border: 0 !important; border-radius: 0 !important; box-sizing: border-box !important; background: #fff !important; font-size: 10px !important; line-height: 1.15 !important; page-break-inside: avoid !important; break-inside: avoid !important; } .receipt table th, .receipt table td { padding: 2px !important; font-size: 9px !important; } }</style>';
           html = html.replace('</head>', receiptPrintStyle + '</head>');
