@@ -41,7 +41,77 @@ table{width:100%;border-collapse:collapse}th,td{padding:10px;text-align:left;bor
 .grid-2col{display:grid;grid-template-columns:1.1fr .9fr;gap:18px}
 .receipt{border:2px dashed #002366;padding:18px;background:#fffef5;border-radius:12px}
 .receipt-head{text-align:center;border-bottom:2px solid #002366;padding-bottom:12px;margin-bottom:12px}
-@media(max-width:900px){body{flex-direction:column}.sidebar{width:100%;height:auto;position:relative}.main-content{margin-left:0;width:100%}.form-grid,.grid-2col{grid-template-columns:1fr}.cards-grid{grid-template-columns:1fr}}
+
+@media print {
+  @page {
+    size: 80mm auto;
+    margin: 2mm;
+  }
+
+  body {
+    display: block;
+    min-height: 0;
+    background: #fff;
+  }
+
+  .sidebar,
+  header,
+  .main-content > main > .app-section:not(#sales-section),
+  #sales-section > .grid-2col > .content-block:not(:has(.receipt)),
+  button,
+  .menu-link,
+  .app-section:not(.active) {
+    display: none !important;
+  }
+
+  #sales-section,
+  #sales-section.active,
+  #sales-section > .grid-2col,
+  #sales-section > .grid-2col > .content-block:has(.receipt) {
+    display: block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    background: #fff !important;
+    box-shadow: none !important;
+  }
+
+  body * {
+    visibility: hidden;
+  }
+
+  .receipt,
+  .receipt * {
+    visibility: visible;
+  }
+
+  .receipt {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 72mm;
+    margin: 0;
+    padding: 3mm;
+    border: 0;
+    border-radius: 0;
+    background: #fff;
+    font-size: 10px;
+    line-height: 1.2;
+  }
+
+  .receipt-head {
+    padding-bottom: 5px;
+    margin-bottom: 5px;
+  }
+
+  .receipt table th,
+  .receipt table td {
+    padding: 3px 2px;
+    font-size: 9px;
+  }
+}
+
+@media(max-width:900px){body{flex-direction:column}.sidebar{width:100%;height:auto;position:relative}.main-content{margin-left:0;width:100%}.form-grid,.grid-2col{grid-template-columns:1fr}.cards-grid{[...]
 </style>
 </head>
 <body>
@@ -76,20 +146,20 @@ table{width:100%;border-collapse:collapse}th,td{padding:10px;text-align:left;bor
 <div class="content-block"><h2>Dernières Ventes</h2><table><thead><tr><th>N° Reçu</th><th>Date</th><th>Client</th><th>Montant</th><th>Paiement</th></tr></thead><tbody id="dash-last-sales"></tbody></table></div>
 </section>
 <section id="products-section" class="app-section">
-<div class="content-block"><h2>➕ Produit</h2><form id="product-form"><div class="form-grid"><div class="form-group"><label>Réf *</label><input id="product-ref" required></div><div class="form-group"><label>Nom *</label><input id="product-name" required></div><div class="form-group"><label>Catégorie</label><select id="product-category"><option>Vidéosurveillance</option><option>Réseau et Wi-Fi</option><option>Accessoires</option><option>Informatique</option><option>Énergie solaire</option></select></div><div class="form-group"><label>Prix achat</label><input id="product-price-buy" type="number" min="0" step="1" required></div><div class="form-group"><label>Prix vente</label><input id="product-price-sell" type="number" min="0" step="1" required></div><div class="form-group"><label>Quantité</label><input id="product-qty" type="number" min="0" step="1" required></div></div><div style="display:flex;gap:10px;margin-top:15px"><button class="btn btn-primary" type="submit">Enregistrer</button><button id="btn-cancel-product" class="btn btn-secondary" type="button" style="display:none">Annuler</button></div></form></div>
+<div class="content-block"><h2>➕ Produit</h2><form id="product-form"><div class="form-grid"><div class="form-group"><label>Réf *</label><input id="product-ref" required></div><div class="form-group"><label>Produit *</label><input id="product-name" required></div><div class="form-group"><label>Catégorie</label><select id="product-category"><option>Vidéosurveillance</option><option>Réseau et Wi-Fi</option><option>Accessoires</option><option>Informatique</option><option>Énergie solaire</option></select></div><div class="form-group"><label>Prix achat</label><input id="product-price-buy" type="number" min="0" value="0"></div><div class="form-group"><label>Prix vente</label><input id="product-price-sell" type="number" min="0" value="0" required></div><div class="form-group"><label>Qté</label><input id="product-qty" type="number" min="0" value="0"></div></div><div style="display:flex;gap:8px;margin-top:12px"><button class="btn btn-primary" type="submit">Enregistrer</button><button class="btn btn-secondary" type="button" id="btn-cancel-product" style="display:none">Annuler</button></div></form></div>
 <div class="content-block"><h2>📋 Stock</h2>
-<div id="stock-filter-banner" style="display:none;background:#fff7e0;border:1px solid #ff9800;padding:10px;border-radius:8px;margin-bottom:10px;font-weight:bold">Filtre actif : <span id="stock-filter-text"></span> <button id="btn-clear-filter" class="btn btn-secondary" type="button" style="margin-left:8px">Effacer</button></div>
+<div id="stock-filter-banner" style="display:none;background:#fff7e0;border:1px solid #ff9800;padding:10px;border-radius:8px;margin-bottom:10px;font-weight:bold">Filtre actif : <span id="stock-filter-text"></span> <button class="btn btn-secondary" id="btn-clear-filter" type="button">Effacer</button></div>
 <div style="display:flex;gap:10px;margin-bottom:10px"><input type="search" id="search-product" placeholder="Rechercher..."><select id="filter-product-cat"><option value="Tous">Toutes</option><option>Vidéosurveillance</option><option>Réseau et Wi-Fi</option><option>Accessoires</option><option>Informatique</option><option>Énergie solaire</option></select></div>
 <table><thead><tr><th>Réf</th><th>Produit</th><th>Prix</th><th>Qté</th><th>État</th><th>Actions</th></tr></thead><tbody id="product-rows"></tbody></table>
 </div>
 </section>
-<section id="sales-section" class="app-section"><div class="grid-2col"><div class="content-block"><h2>🛒 Caisse</h2><div class="form-group"><label>Client</label><select id="sale-client-select"></select></div><div class="form-group"><label>Produit</label><select id="sale-product-select"><option value="">-- Choisir --</option></select></div><button class="btn btn-primary" id="btn-add-to-cart" type="button" style="margin-top:8px">Ajouter au panier</button><table style="margin-top:12px"><thead><tr><th>Produit</th><th>PU</th><th>Qté</th><th>Action</th></tr></thead><tbody id="cart-rows"></tbody></table><div style="margin-top:12px;display:flex;justify-content:space-between;align-items:center;font-weight:bold"><span>Total</span><span id="cart-total">0 MRU</span></div></div><div class="content-block"><h2>💳 Paiement</h2><div class="form-group"><label>Mode de paiement</label><select id="sale-payment"><option>Espèces</option><option>Mobile Money</option><option>Carte</option><option>Virement</option></select></div><button class="btn btn-primary" id="btn-validate-sale" type="button" style="margin-top:10px;width:100%">Valider la vente</button></div></div></section>
+<section id="sales-section" class="app-section"><div class="grid-2col"><div class="content-block"><h2>🛒 Caisse</h2><div class="form-group"><label>Client</label><select id="sale-client-select"></select></div><div class="form-group"><label>Produit</label><select id="sale-product-select"><option value="">-- Choisir --</option></select></div><div style="display:flex;gap:10px;align-items:center;margin-top:8px"><button type="button" class="btn btn-primary" id="btn-add-to-cart">Ajouter</button></div><div class="form-group" style="margin-top:12px"><label>Paiement</label><select id="sale-payment"><option>Espèces</option><option>Carte</option><option>Mobile Money</option><option>À crédit</option></select></div></div><div class="content-block"><h2>Panier</h2><table><thead><tr><th>Produit</th><th>Prix</th><th>Qté</th><th>Action</th></tr></thead><tbody id="cart-rows"></tbody></table><div style="margin-top:10px"><strong>Total :</strong> <span id="cart-total">0 MRU</span></div><button class="btn btn-primary" type="button" id="btn-validate-sale" style="margin-top:12px">Valider la vente</button></div></div><div class="content-block receipt" style="margin-top:18px"><div class="receipt-head"><h2>FITS MANAGER</h2><small>Fouta IT Services</small></div><div class="receipt-body"><p><strong>Reçu N° :</strong> <span id="r-num">-</span></p><p><strong>Date :</strong> <span id="r-date">-</span></p><p><strong>Client :</strong> <span id="r-client">-</span></p><p><strong>Paiement :</strong> <span id="r-pay">-</span></p><table><thead><tr><th>Produit</th><th>Qté</th><th>Total</th></tr></thead><tbody id="r-items"></tbody></table><p style="margin-top:12px"><strong>Total :</strong> <span id="r-total">0 MRU</span></p></div></div></section>
 <section id="receipts-section" class="app-section"><div class="content-block"><h2>🧾 Reçus</h2><table><thead><tr><th>N°</th><th>Date</th><th>Client</th><th>Montant</th></tr></thead><tbody id="all-receipts-rows"></tbody></table></div></section>
-<section id="customers-section" class="app-section"><div class="content-block"><h2>👥 Clients</h2><form id="customer-form" style="display:flex;gap:10px"><input id="cust-name" placeholder="Nom *" required><input id="cust-phone" placeholder="Téléphone"><button class="btn btn-primary" type="submit">Ajouter</button></form><table style="margin-top:12px"><thead><tr><th>Nom</th><th>Téléphone</th><th>Achats</th></tr></thead><tbody id="customer-rows"></tbody></table></div></section>
-<section id="suppliers-section" class="app-section"><div class="content-block"><h2>🏢 Fournisseurs</h2><form id="supplier-form" style="display:flex;gap:10px"><input id="sup-name" placeholder="Nom *" required><input id="sup-phone" placeholder="Téléphone"><button class="btn btn-primary" type="submit">Ajouter</button></form><table style="margin-top:12px"><thead><tr><th>Nom</th><th>Téléphone</th></tr></thead><tbody id="supplier-rows"></tbody></table></div></section>
-<section id="supply-section" class="app-section"><div class="content-block"><h2>🚛 Entrée Stock</h2><form id="supply-form"><div class="form-grid"><div class="form-group"><label>Fournisseur</label><select id="supply-supplier"></select></div><div class="form-group"><label>Produit</label><select id="supply-product"></select></div><div class="form-group"><label>Quantité</label><input id="supply-qty" type="number" min="1" value="1" required></div></div><button class="btn btn-primary" type="submit" style="margin-top:12px">Valider</button></form></div><div class="content-block"><h2>📜 Historique des approvisionnements</h2><table><thead><tr><th>Date</th><th>Fournisseur</th><th>Produit</th><th>Quantité</th></tr></thead><tbody id="supply-rows"></tbody></table></div></section>
-<section id="reports-section" class="app-section"><div class="cards-grid"><div class="card"><h3>Marge</h3><p id="rep-margin">0 MRU</p></div><div class="card"><h3>Jour</h3><p id="rep-day-sales">0 MRU</p></div><div class="card"><h3>Mois</h3><p id="rep-month-sales">0 MRU</p></div></div><div class="content-block"><h2>📊 Top produits vendus</h2><table><thead><tr><th>Produit</th><th>Qté</th></tr></thead><tbody id="rep-top-products-rows"></tbody></table></div></section>
-<section id="backup-section" class="app-section"><div class="content-block"><h2>💾 Sauvegarde</h2><button class="btn btn-primary" id="btn-export-json">📥 Exporter JSON</button> <input type="file" id="import-file-json" accept="application/json" style="margin-top:8px"><button class="btn btn-secondary" id="btn-clear-data" type="button" style="margin-top:8px">🗑 Effacer les données</button></div></section>
+<section id="customers-section" class="app-section"><div class="content-block"><h2>👥 Clients</h2><form id="customer-form" style="display:flex;gap:10px"><input id="cust-name" placeholder="Nom *" required><input id="cust-phone" placeholder="Téléphone"><button class="btn btn-primary" type="submit">Ajouter</button></form><table><thead><tr><th>Nom</th><th>Téléphone</th><th>Achats</th></tr></thead><tbody id="customer-rows"></tbody></table></div></section>
+<section id="suppliers-section" class="app-section"><div class="content-block"><h2>🏢 Fournisseurs</h2><form id="supplier-form" style="display:flex;gap:10px"><input id="sup-name" placeholder="Nom *" required><input id="sup-phone" placeholder="Téléphone"><button class="btn btn-primary" type="submit">Ajouter</button></form><table><thead><tr><th>Nom</th><th>Téléphone</th></tr></thead><tbody id="supplier-rows"></tbody></table></div></section>
+<section id="supply-section" class="app-section"><div class="content-block"><h2>🚛 Entrée Stock</h2><form id="supply-form"><div class="form-grid"><div class="form-group"><label>Fournisseur</label><select id="supply-supplier"></select></div><div class="form-group"><label>Produit</label><select id="supply-product"></select></div><div class="form-group"><label>Qté</label><input id="supply-qty" type="number" min="1" value="1" required></div><div class="form-group"><label>Date</label><input id="supply-date" type="date"></div></div><button class="btn btn-primary" type="submit" style="margin-top:12px">Enregistrer</button></form><table style="margin-top:16px"><thead><tr><th>Date</th><th>Fournisseur</th><th>Produit</th><th>Qté</th></tr></thead><tbody id="supply-rows"></tbody></table></div></section>
+<section id="reports-section" class="app-section"><div class="cards-grid"><div class="card"><h3>Marge</h3><p id="rep-margin">0 MRU</p></div><div class="card"><h3>Jour</h3><p id="rep-day-sales">0 MRU</p></div><div class="card"><h3>Mois</h3><p id="rep-month-sales">0 MRU</p></div></div><div class="content-block"><h2>Top produits</h2><table><thead><tr><th>Produit</th><th>Qté vendue</th></tr></thead><tbody id="rep-top-products-rows"></tbody></table></div></section>
+<section id="backup-section" class="app-section"><div class="content-block"><h2>💾 Sauvegarde</h2><button class="btn btn-primary" id="btn-export-json">📥 Exporter JSON</button> <button class="btn btn-secondary" id="btn-clear-data" type="button">🗑️ Effacer les données</button><input type="file" id="import-file-json" accept="application/json" style="margin-top:12px;display:block"></div></section>
 </main>
 </div>
 <script>
@@ -163,7 +233,8 @@ document.addEventListener('DOMContentLoaded', function(){
   document.getElementById('card-sales').addEventListener('click',function(){openCard('receipts');});
   document.getElementById('card-margin').addEventListener('click',function(){openCard('reports');});
   document.getElementById('btn-clear-filter').addEventListener('click',clearStockFilter);
-  function updateDate(){var el=document.getElementById('current-date-time'); if(el) el.textContent=new Date().toLocaleString('fr-FR',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});} setInterval(updateDate,60000); updateDate();
+  function updateDate(){var el=document.getElementById('current-date-time'); if(el) el.textContent=new Date().toLocaleString('fr-FR',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});} 
+  setInterval(updateDate,60000); updateDate();
   function updateDash(){
     document.getElementById('dash-total-products').textContent=FITS_DATA.products.length;
     document.getElementById('dash-alert-empty').textContent=FITS_DATA.products.filter(function(p){return p.qty===0}).length;
@@ -173,7 +244,7 @@ document.addEventListener('DOMContentLoaded', function(){
     document.getElementById('dash-margin').textContent=FITS_DATA.sales.reduce(function(a,b){return a+b.marge},0).toLocaleString()+' MRU';
     var last=document.getElementById('dash-last-sales');
     if(FITS_DATA.sales.length===0) last.innerHTML='<tr><td colspan="5">Aucune vente</td></tr>';
-    else{last.innerHTML=''; FITS_DATA.sales.slice(-5).reverse().forEach(function(s){last.innerHTML+='<tr><td>'+s.numero+'</td><td>'+new Date(s.date).toLocaleDateString()+'</td><td>'+s.clientName+'</td><td>'+s.totalPayable.toLocaleString()+' MRU</td><td>'+s.paiement+'</td></tr>'});}
+    else{last.innerHTML=''; FITS_DATA.sales.slice(-5).reverse().forEach(function(s){last.innerHTML+='<tr><td>'+s.numero+'</td><td>'+new Date(s.date).toLocaleDateString()+'</td><td>'+s.clientName+'</td><td>'+s.totalPayable+' MRU</td><td>'+s.paiement+'</td></tr>';});}
     var today=new Date().toDateString();
     var day=FITS_DATA.sales.filter(function(s){return new Date(s.date).toDateString()===today}).reduce(function(a,b){return a+b.totalPayable},0);
     var now=new Date();
@@ -197,9 +268,9 @@ document.addEventListener('DOMContentLoaded', function(){
     else FITS_DATA.products.push({ref:ref,name:name,cat:cat,buy:buy,sell:sell,qty:qty});
     pForm.reset(); save();
   });
-  window.editProduct=function(ref){var p=FITS_DATA.products.find(function(x){return x.ref===ref}); editRef=ref; document.getElementById('product-ref').value=p.ref; document.getElementById('product-name').value=p.name; document.getElementById('product-category').value=p.cat; document.getElementById('product-price-buy').value=p.buy; document.getElementById('product-price-sell').value=p.sell; document.getElementById('product-qty').value=p.qty; document.getElementById('btn-cancel-product').style.display='inline-block';};
+  window.editProduct=function(ref){var p=FITS_DATA.products.find(function(x){return x.ref===ref}); editRef=ref; document.getElementById('product-ref').value=p.ref; document.getElementById('product-name').value=p.name; document.getElementById('product-category').value=p.cat; document.getElementById('product-price-buy').value=p.buy; document.getElementById('product-price-sell').value=p.sell; document.getElementById('product-qty').value=p.qty; document.getElementById('btn-cancel-product').style.display='inline-block'; window.scrollTo({top:0,behavior:'smooth'});};
   window.deleteProduct=function(ref){if(!confirm('Supprimer '+ref+' ?')) return; FITS_DATA.products=FITS_DATA.products.filter(function(p){return p.ref!==ref}); save();};
-  window.quickPrice=function(ref){var p=FITS_DATA.products.find(function(x){return x.ref===ref}); var nv=prompt('Nouveau prix vente pour '+p.name+':',p.sell); if(nv===null) return; var n=Number(nv); if(!isNaN(n)&&n>=0){p.sell=n; save();}};
+  window.quickPrice=function(ref){var p=FITS_DATA.products.find(function(x){return x.ref===ref}); var nv=prompt('Nouveau prix vente pour '+p.name+':',p.sell); if(nv===null) return; var n=Number(nv); if(!isNaN(n)&&n>0){p.sell=n; save();}};
   document.getElementById('btn-cancel-product').addEventListener('click',function(){editRef=null; pForm.reset(); document.getElementById('btn-cancel-product').style.display='none';});
   function renderProd(){
     var tbody=document.getElementById('product-rows');
@@ -215,7 +286,7 @@ document.addEventListener('DOMContentLoaded', function(){
       return m&&c&&f;
     }).forEach(function(p){
       var st=p.qty===0?'<span class="stock-empty">Rupture</span>':p.qty<=LOW?'<span class="stock-low">Faible</span>':'<span style="color:green">OK</span>';
-      tbody.innerHTML+='<tr><td>'+p.ref+'</td><td>'+p.name+'</td><td>'+p.sell+' MRU</td><td>'+p.qty+'</td><td>'+st+'</td><td><button class="btn-quick" onclick="quickPrice(\''+p.ref+'\')">💰</button> <button class="btn-quick" onclick="editProduct(\''+p.ref+'\')">✏️</button> <button class="btn-quick" onclick="deleteProduct(\''+p.ref+'\')">🗑</button></td></tr>';
+      tbody.innerHTML+='<tr><td>'+p.ref+'</td><td>'+p.name+'</td><td>'+p.sell+' MRU</td><td>'+p.qty+'</td><td>'+st+'</td><td><button class="btn-quick" onclick="quickPrice(\''+p.ref+'\')">💰</button> <button class="btn-quick" onclick="editProduct(\''+p.ref+'\')">✏️</button> <button class="btn-quick" onclick="deleteProduct(\''+p.ref+'\')">🗑️</button></td></tr>';
     });
     if(tbody.innerHTML==='') tbody.innerHTML='<tr><td colspan="6" style="text-align:center">Aucun produit pour ce filtre</td></tr>';
   }
@@ -228,7 +299,7 @@ document.addEventListener('DOMContentLoaded', function(){
     var total=0;
     if(cart.length===0){tbody.innerHTML='<tr><td colspan="4">Vide</td></tr>'; document.getElementById('cart-total').textContent='0 MRU'; return;}
     tbody.innerHTML='';
-    cart.forEach(function(i){total+=i.price*i.qty; tbody.innerHTML+='<tr><td>'+i.name+'</td><td>'+i.price+'</td><td><button onclick="changeQty(\''+i.ref+'\',-1)">-</button> '+i.qty+' <button onclick="changeQty(\''+i.ref+'\',1)">+</button></td><td><button onclick="removeCart(\''+i.ref+'\')">Sup</button></td></tr>';});
+    cart.forEach(function(i){total+=i.price*i.qty; tbody.innerHTML+='<tr><td>'+i.name+'</td><td>'+i.price+'</td><td><button onclick="changeQty(\''+i.ref+'\',-1)">-</button> '+i.qty+' <button onclick="changeQty(\''+i.ref+'\',1)">+</button></td><td><button onclick="removeCart(\''+i.ref+'\')">✖</button></td></tr>';});
     document.getElementById('cart-total').textContent=total+' MRU';
   }
   window.changeQty=function(ref,d){var prod=FITS_DATA.products.find(function(p){return p.ref===ref}); var it=cart.find(function(c){return c.ref===ref}); if(!it) return; var nq=it.qty+d; if(nq<=0){cart=cart.filter(function(c){return c.ref!==ref}); renderCart(); return;} if(nq>prod.qty){alert('Stock max '+prod.qty); return;} it.qty=nq; renderCart();};
@@ -249,7 +320,7 @@ document.addEventListener('DOMContentLoaded', function(){
     var total=cart.reduce(function(a,i){return a+i.price*i.qty},0);
     var marge=cart.reduce(function(a,i){return a+(i.price-i.buy)*i.qty},0);
     var numero='FITS-'+String(FITS_DATA.sales.length+1).padStart(4,'0');
-    var sale={numero:numero,date:new Date().toISOString(),clientName:client.name,paiement:document.getElementById('sale-payment').value,totalPayable:total,marge:marge,items:cart.map(function(x){return {ref:x.ref,name:x.name,qty:x.qty,price:x.price,buy:x.buy};})};
+    var sale={numero:numero,date:new Date().toISOString(),clientName:client.name,paiement:document.getElementById('sale-payment').value,totalPayable:total,marge:marge,items:cart.map(function(x){return {ref:x.ref,name:x.name,qty:x.qty,price:x.price};})};
     cart.forEach(function(i){var p=FITS_DATA.products.find(function(x){return x.ref===i.ref}); if(p) p.qty-=i.qty;});
     FITS_DATA.sales.push(sale); cart=[]; renderCart();
     document.getElementById('r-num').textContent=numero;
@@ -263,8 +334,8 @@ document.addEventListener('DOMContentLoaded', function(){
   function renderAll(){
     renderProd();
     var rc=document.getElementById('all-receipts-rows');
-    rc.innerHTML=FITS_DATA.sales.length?FITS_DATA.sales.slice().reverse().map(function(s){return '<tr><td>'+s.numero+'</td><td>'+new Date(s.date).toLocaleDateString()+'</td><td>'+s.clientName+'</td><td>'+s.totalPayable.toLocaleString()+' MRU</td></tr>';}).join(''):'<tr><td colspan="4">Aucun reçu</td></tr>';
-    document.getElementById('customer-rows').innerHTML=FITS_DATA.customers.map(function(c){return '<tr><td>'+c.name+'</td><td>'+(c.phone||'')+'</td><td>'+FITS_DATA.sales.filter(function(s){return s.clientName===c.name}).length+'</td></tr>';}).join('');
+    rc.innerHTML=FITS_DATA.sales.length?FITS_DATA.sales.slice().reverse().map(function(s){return '<tr><td>'+s.numero+'</td><td>'+new Date(s.date).toLocaleDateString()+'</td><td>'+s.clientName+'</td><td>'+s.totalPayable+' MRU</td></tr>'}).join(''):'<tr><td colspan="4">Aucun reçu</td></tr>';
+    document.getElementById('customer-rows').innerHTML=FITS_DATA.customers.map(function(c){return '<tr><td>'+c.name+'</td><td>'+(c.phone||'')+'</td><td>'+FITS_DATA.sales.filter(function(s){return s.clientName===c.name}).reduce(function(a,s){return a+s.totalPayable},0)+' MRU</td></tr>';}).join('')||'<tr><td colspan="3">Aucun client</td></tr>';
     document.getElementById('supplier-rows').innerHTML=FITS_DATA.suppliers.map(function(s){return '<tr><td>'+s.name+'</td><td>'+(s.phone||'')+'</td></tr>';}).join('');
     document.getElementById('supply-rows').innerHTML=FITS_DATA.supplies.slice().reverse().map(function(s){
       var supplier = s.supplierName || (FITS_DATA.suppliers.find(function(item){return item.id===s.supplierId}) || {}).name || 'Inconnu';
@@ -272,7 +343,7 @@ document.addEventListener('DOMContentLoaded', function(){
       return '<tr><td>'+new Date(s.date).toLocaleDateString()+'</td><td>'+supplier+'</td><td>'+product+'</td><td>'+s.qty+'</td></tr>';
     }).join('') || '<tr><td colspan="4">Aucun approvisionnement</td></tr>';
     var top={}; FITS_DATA.sales.forEach(function(s){s.items.forEach(function(i){top[i.name]=(top[i.name]||0)+i.qty;});});
-    document.getElementById('rep-top-products-rows').innerHTML=Object.entries(top).sort(function(a,b){return b[1]-a[1]}).map(function(e){return '<tr><td>'+e[0]+'</td><td>'+e[1]+'</td></tr>';}).join('') || '<tr><td colspan="2">Aucune vente</td></tr>';
+    document.getElementById('rep-top-products-rows').innerHTML=Object.entries(top).sort(function(a,b){return b[1]-a[1]}).map(function(e){return '<tr><td>'+e[0]+'</td><td>'+e[1]+'</td></tr>';}).join('') || '<tr><td colspan="2">Aucun produit vendu</td></tr>';
   }
   function populate(){
     document.getElementById('sale-client-select').innerHTML=FITS_DATA.customers.map(function(c){return '<option value="'+c.id+'">'+c.name+'</option>';}).join('');
@@ -280,11 +351,11 @@ document.addEventListener('DOMContentLoaded', function(){
     document.getElementById('supply-supplier').innerHTML=FITS_DATA.suppliers.map(function(s){return '<option value="'+s.id+'">'+s.name+'</option>';}).join('');
     document.getElementById('supply-product').innerHTML=FITS_DATA.products.map(function(p){return '<option value="'+p.ref+'">'+p.name+'</option>';}).join('');
   }
-  document.getElementById('customer-form').addEventListener('submit',function(e){e.preventDefault(); var name=document.getElementById('cust-name').value.trim(); if(!name) return; var phone=document.getElementById('cust-phone').value.trim(); FITS_DATA.customers.push({id:'c'+Date.now(),name:name,phone:phone}); document.getElementById('customer-form').reset(); save();});
-  document.getElementById('supplier-form').addEventListener('submit',function(e){e.preventDefault(); var name=document.getElementById('sup-name').value.trim(); if(!name) return; var phone=document.getElementById('sup-phone').value.trim(); FITS_DATA.suppliers.push({id:'s'+Date.now(),name:name,phone:phone}); document.getElementById('supplier-form').reset(); save();});
-  document.getElementById('supply-form').addEventListener('submit',function(e){e.preventDefault(); var ref=document.getElementById('supply-product').value; var p=FITS_DATA.products.find(function(x){return x.ref===ref}); if(!p) return alert('Produit requis'); var qty=Number(document.getElementById('supply-qty').value); if(!qty||qty<=0) return alert('Quantité invalide'); var supplierId=document.getElementById('supply-supplier').value; var supplier=FITS_DATA.suppliers.find(function(x){return x.id===supplierId})||{name:'Fournisseur'}; p.qty += qty; FITS_DATA.supplies.push({date:new Date().toISOString(),productRef:ref,productName:p.name,qty:qty,supplierId:supplierId,supplierName:supplier.name}); document.getElementById('supply-form').reset(); save();});
-  document.getElementById('btn-export-json').addEventListener('click',function(){var blob=new Blob([JSON.stringify(FITS_DATA,null,2)],{type:'application/json'}); var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='FITS_MANAGER_BACKUP.json'; a.click(); URL.revokeObjectURL(a.href);});
-  document.getElementById('import-file-json').addEventListener('change',function(e){var f=e.target.files[0]; if(!f) return; var r=new FileReader(); r.onload=function(){try{FITS_DATA=JSON.parse(r.result); save();}catch(err){alert('Fichier invalide');}}; r.readAsText(f);});
+  document.getElementById('customer-form').addEventListener('submit',function(e){e.preventDefault(); var name=document.getElementById('cust-name').value.trim(); if(!name) return; var phone=document.getElementById('cust-phone').value.trim(); var id='c'+(Date.now().toString().slice(-6)); FITS_DATA.customers.push({id:id,name:name,phone:phone}); document.getElementById('customer-form').reset(); save();});
+  document.getElementById('supplier-form').addEventListener('submit',function(e){e.preventDefault(); var name=document.getElementById('sup-name').value.trim(); if(!name) return; var phone=document.getElementById('sup-phone').value.trim(); var id='s'+(Date.now().toString().slice(-6)); FITS_DATA.suppliers.push({id:id,name:name,phone:phone}); document.getElementById('supplier-form').reset(); save();});
+  document.getElementById('supply-form').addEventListener('submit',function(e){e.preventDefault(); var ref=document.getElementById('supply-product').value; var p=FITS_DATA.products.find(function(x){return x.ref===ref}); var suppId=document.getElementById('supply-supplier').value; var qty=Number(document.getElementById('supply-qty').value); if(!ref||!p||!suppId||!qty) return alert('Compléter'); p.qty+=qty; FITS_DATA.supplies.push({supplierId:suppId,supplierName:(FITS_DATA.suppliers.find(function(s){return s.id===suppId})||{}).name,productRef:ref,productName:p.name,qty:qty,date:(document.getElementById('supply-date').value||new Date().toISOString())}); document.getElementById('supply-form').reset(); save();});
+  document.getElementById('btn-export-json').addEventListener('click',function(){var blob=new Blob([JSON.stringify(FITS_DATA,null,2)],{type:'application/json'}); var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='fits-manager-backup.json'; a.click();});
+  document.getElementById('import-file-json').addEventListener('change',function(e){var f=e.target.files[0]; if(!f) return; var r=new FileReader(); r.onload=function(){try{FITS_DATA=JSON.parse(r.result); if(!Array.isArray(FITS_DATA.products)) FITS_DATA.products=[]; if(!Array.isArray(FITS_DATA.sales)) FITS_DATA.sales=[]; if(!Array.isArray(FITS_DATA.customers)) FITS_DATA.customers=[]; if(!Array.isArray(FITS_DATA.suppliers)) FITS_DATA.suppliers=[]; if(!Array.isArray(FITS_DATA.supplies)) FITS_DATA.supplies=[]; save();}catch(err){alert('Fichier invalide');}}; r.readAsText(f);});
   document.getElementById('btn-clear-data').addEventListener('click',function(){if(!confirm('Effacer tout ?')) return; localStorage.removeItem('FITS_MANAGER_STORE'); location.reload();});
   load(); updateDash(); renderAll(); populate();
 });
